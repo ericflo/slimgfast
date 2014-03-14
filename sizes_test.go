@@ -33,7 +33,7 @@ func TestSizeFromKey(t *testing.T) {
 }
 
 func TestSizeFromBadKey(t *testing.T) {
-	badKeys := []string{"Zx15", "-12x-12", "-12x12", "asdf", "x", "nullxnull"}
+	badKeys := []string{"Zx15", "-12x-12", "-12x12", "asdf", "x", "nullxnull", ""}
 	for _, key := range badKeys {
 		size, err := SizeFromKey(key)
 		if err == nil {
