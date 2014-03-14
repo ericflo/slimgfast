@@ -33,11 +33,17 @@ func SizeFromKey(key string) (Size, error) {
 	var s Size
 	splitKey := strings.Split(key, "x")
 	if width, err := strconv.Atoi(splitKey[0]); err == nil {
+		if width < 1 {
+			return s, fmt.Errorf("Got a key with an invalid width: %s", key)
+		}
 		s.Width = uint(width)
 	} else {
 		return s, err
 	}
 	if height, err := strconv.Atoi(splitKey[1]); err == nil {
+		if height < 1 {
+			return s, fmt.Errorf("Got a key with an invalid height: %s", key)
+		}
 		s.Height = uint(height)
 	} else {
 		return s, err
@@ -154,6 +160,7 @@ func (counter *SizeCounter) GetAllSizes() ([]Size, error) {
 	return sizes, nil
 }
 
+// TODO: Sort first or something, this is not correct right now, will pick random values
 func (counter *SizeCounter) GetTopSizesByCount(count uint) ([]Size, error) {
 	sizes := make([]Size, 0)
 	var i uint = 0
