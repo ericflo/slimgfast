@@ -14,8 +14,11 @@ type App struct {
 	workerGroup *WorkerGroup
 }
 
-func NewApp(sizeCounter *SizeCounter, fetcher Fetcher, numWorkers int, cacheMegabytes int64) *App {
-	workerGroup := &WorkerGroup{NumWorkers: numWorkers}
+func NewApp(sizeCounter *SizeCounter, fetcher Fetcher, transformers []Transformer, numWorkers int, cacheMegabytes int64) *App {
+	workerGroup := &WorkerGroup{
+		NumWorkers:   numWorkers,
+		Transformers: transformers,
+	}
 	app := &App{
 		SizeCounter: sizeCounter,
 		workerGroup: workerGroup,

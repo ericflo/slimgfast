@@ -35,10 +35,15 @@ func main() {
 	}
 	proxyFetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: proxyUrlPrefix}
 
+	// Instantiate the transformers
+	resizeTransformer := &slimgfast.TransformerResize{}
+	transformers := []slimgfast.Transformer{resizeTransformer}
+
 	// Create the app
 	app := slimgfast.NewApp(
 		sizeCounter,
 		proxyFetcher,
+		transformers,
 		NUM_WORKERS,
 		THUMB_CACHE_MEGABYTES,
 	)

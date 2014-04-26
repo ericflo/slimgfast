@@ -2,7 +2,6 @@ package slimgfast
 
 import (
 	"bytes"
-	"github.com/nfnt/resize"
 	"image"
 	_ "image/gif"
 	"image/jpeg"
@@ -18,8 +17,9 @@ type Job struct {
 }
 
 type WorkerGroup struct {
-	NumWorkers int
-	jobs       chan Job
+	Transformers []Transformer
+	NumWorkers   int
+	jobs         chan Job
 }
 
 func (wg *WorkerGroup) Start() {
@@ -63,7 +63,7 @@ func work(wg *WorkerGroup) {
 			job.Error <- err
 			return
 		}
-		resizedData, err := resizeImg(&job.ImageRequest, data)
+		resizedData, err := resizeImg(&job.ImageRequest, wg.Transformers, data)
 		if err == nil {
 			job.Result <- resizedData
 		} else {
@@ -72,22 +72,21 @@ func work(wg *WorkerGroup) {
 	}
 }
 
-func resizeImg(req *ImageRequest, data []byte) ([]byte, error) {
+func resizeImg(req *ImageRequest, transformers []Transformer, data []byte) ([]byte, error) {
 	// Middle variable is format name that was used
 	img, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		log.Println("Error decoding image", err)
 		return nil, err
 	}
-	// TODO: Allow a dynamic list of transformations, not just resize
+	for _, transformer := range transformers {
+		img, err = transformer.Transform(req, img)
+		if err != nil {
+			return nil, err
+		}
+	}
 	var buf bytes.Buffer
-	resized := resize.Resize(
-		uint(req.Width),
-		uint(req.Height),
-		img,
-		resize.Lanczos3,
-	)
-	if err = jpeg.Encode(&buf, resized, nil); err != nil {
+	if err = jpeg.Encode(&buf, img, nil); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
