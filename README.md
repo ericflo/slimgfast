@@ -108,8 +108,6 @@ So, it takes an image, and the request, and then returns the transformed image
             image,
             resize.Lanczos3,
         )
-        // TODO: Inspect the req.Fit attribute and either crop or scale it,
-        //       as necessary.
         return resized, nil
     }
 
