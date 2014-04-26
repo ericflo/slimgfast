@@ -14,5 +14,7 @@ func (t *TransformerResize) Transform(req *ImageRequest, image image.Image) (ima
 		image,
 		resize.Lanczos3,
 	)
+	// TODO: Inspect the req.Fit attribute and either crop or scale it,
+	//       as necessary.
 	return resized, nil
 }

@@ -31,7 +31,7 @@ func main() {
 	flag.Parse()
 	prefix := flag.Arg(0)
 	if prefix == "" {
-		panic("Must pass the proxy URL prefix to the command")
+		panic("Must pass the prefix to the command")
 	}
 	fetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: prefix}
 	//fetcher := &slimgfast.FilesystemFetcher{PathPrefix: prefix}
