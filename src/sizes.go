@@ -17,7 +17,6 @@ type Size struct {
 }
 
 type SizeFile struct {
-	Sizes  []Size
 	Counts map[string]uint
 }
 
@@ -92,28 +91,11 @@ func getCountsFromFilename(filename string) (map[string]uint, error) {
 		log.Fatal(err)
 	}
 
-	// Build the sizes map from the decoded json
-	for _, s := range sizeFile.Sizes {
-		key := s.Key()
-		if sizeFile.Counts == nil {
-			sizes[key] = 1
-		} else {
-			sizes[key] = sizeFile.Counts[key]
-		}
-	}
-
-	return sizes, nil
+	return sizeFile.Counts, nil
 }
 
 func saveFile(counter *SizeCounter) error {
-	sizes, err := counter.GetAllSizes()
-	if err != nil {
-		return err
-	}
-	bytes, err := json.Marshal(SizeFile{
-		Sizes:  sizes,
-		Counts: counter.counts,
-	})
+	bytes, err := json.Marshal(SizeFile{Counts: counter.counts})
 	if err != nil {
 		return err
 	}
@@ -127,18 +109,20 @@ func saveFile(counter *SizeCounter) error {
 func (counter *SizeCounter) Start(every time.Duration) {
 	go func() {
 		ticks := time.Tick(every)
-		select {
-		case <-ticks:
-			saveFile(counter)
-		case <-counter.done:
-			saveFile(counter)
-			return
+		for {
+			select {
+			case <-ticks:
+				saveFile(counter)
+			case <-counter.done:
+				saveFile(counter)
+				return
+			}
 		}
 	}()
 	return
 }
 
-func (counter *SizeCounter) CountSize(size Size) {
+func (counter *SizeCounter) CountSize(size *Size) {
 	key := size.Key()
 	if val, ok := counter.counts[key]; ok {
 		counter.counts[key] = val + 1
@@ -160,7 +144,7 @@ func (counter *SizeCounter) GetAllSizes() ([]Size, error) {
 	return sizes, nil
 }
 
-// TODO: Sort first or something, this is not correct right now, will pick random values
+// TODO: Sort first or something, this is not correct right now, it'll pick random values
 func (counter *SizeCounter) GetTopSizesByCount(count uint) ([]Size, error) {
 	sizes := make([]Size, 0)
 	var i uint = 0

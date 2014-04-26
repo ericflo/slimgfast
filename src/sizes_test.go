@@ -17,6 +17,12 @@ func ClearTmpSizesJson() error {
 	return os.Remove(filename)
 }
 
+/*
+func SetTmpSizesJson() error {
+
+}
+*/
+
 func TestSizeFromKey(t *testing.T) {
 	var key string = "15x15"
 	var expected uint = 15
@@ -42,6 +48,13 @@ func TestSizeFromBadKey(t *testing.T) {
 	}
 }
 
+func TestKey(t *testing.T) {
+	size := Size{Width: 15, Height: 15}
+	if size.Key() != "15x15" {
+		t.Error("A 15x15 Size should output the key \"15x15\"")
+	}
+}
+
 func TestNewSizeCounter(t *testing.T) {
 	if err := ClearTmpSizesJson(); err != nil {
 		t.Error("Could not clear temporary sizes.json file")
@@ -52,3 +65,9 @@ func TestNewSizeCounter(t *testing.T) {
 		counter.Close()
 	}
 }
+
+/*
+func TestNewSizeCounterWithData(t *testing.T) {
+
+}
+*/
