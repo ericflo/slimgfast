@@ -24,10 +24,6 @@ func (f *ProxyFetcher) ParseURL(rawUrl string) error {
 }
 
 func (f *ProxyFetcher) Fetch(req *ImageRequest, dest groupcache.Sink) error {
-	err := f.ParseURL(req.Url)
-	if err != nil {
-		return err
-	}
 	resp, err := http.Get(f.url)
 	if err != nil {
 		return err

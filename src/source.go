@@ -31,6 +31,10 @@ func NewImageSourceCustomCache(fetcher Fetcher, cacheName string, cacheMegabytes
 			if err != nil {
 				return err
 			}
+			err = fetcher.ParseURL(req.Url)
+			if err != nil {
+				return err
+			}
 			return fetcher.Fetch(req, dest)
 		}))
 	return &ImageSource{cache: cache}

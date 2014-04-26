@@ -31,10 +31,6 @@ func (f *S3Fetcher) ParseURL(rawUrl string) error {
 }
 
 func (f *S3Fetcher) Fetch(req *ImageRequest, dest groupcache.Sink) error {
-	err := f.ParseURL(req.Url)
-	if err != nil {
-		return err
-	}
 	conn := s3.New(f.Auth, f.Region)
 	bucket := conn.Bucket(f.bucket)
 	if data, err := bucket.Get(f.filename); err != nil {
