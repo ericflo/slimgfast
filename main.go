@@ -4,9 +4,6 @@ import (
 	"flag"
 	"github.com/ericflo/slimgfast/src"
 	"github.com/golang/groupcache"
-	"time"
-	//"launchpad.net/goamz/aws"
-	//"log"
 	"net/http"
 )
 
@@ -20,13 +17,6 @@ var THUMB_CACHE_MEGABYTES int64 = int64(slimgfast.GetEnvInt(
 	"SLIMGFAST_THUMB_CACHE_MEGABYTES", 512))
 
 func main() {
-	// Create a counter to track image size requests
-	sizeCounter, err := slimgfast.NewSizeCounter(COUNTER_FILENAME)
-	if err != nil {
-		panic(err.Error())
-	}
-	sizeCounter.Start(1 * time.Second)
-
 	// Set up the fetcher
 	flag.Parse()
 	prefix := flag.Arg(0)
@@ -42,9 +32,9 @@ func main() {
 
 	// Create the app
 	app := slimgfast.NewApp(
-		sizeCounter,
 		fetcher,
 		transformers,
+		COUNTER_FILENAME,
 		NUM_WORKERS,
 		THUMB_CACHE_MEGABYTES,
 	)

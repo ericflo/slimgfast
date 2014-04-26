@@ -4,23 +4,32 @@ import (
 	"fmt"
 	"github.com/golang/groupcache"
 	"net/http"
+	"time"
 )
 
 const RESIZED_IMAGE_SOURCE_NAME string = "slimgfast_resized_image_source"
 
 type App struct {
-	SizeCounter *SizeCounter
+	sizeCounter *SizeCounter
 	cache       *groupcache.Group
 	workerGroup *WorkerGroup
 }
 
-func NewApp(sizeCounter *SizeCounter, fetcher Fetcher, transformers []Transformer, numWorkers int, cacheMegabytes int64) *App {
+func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string, numWorkers int, cacheMegabytes int64) *App {
 	workerGroup := &WorkerGroup{
 		NumWorkers:   numWorkers,
 		Transformers: transformers,
 	}
+	// Create a counter to track image size requests
+	sizeCounter, err := NewSizeCounter(counterFilename)
+	if err != nil {
+		panic(err.Error())
+	}
+	// Should we un-hardcode this? Does anyone care?
+	sizeCounter.Start(1 * time.Second)
+
 	app := &App{
-		SizeCounter: sizeCounter,
+		sizeCounter: sizeCounter,
 		workerGroup: workerGroup,
 	}
 	imageSource := NewImageSource(fetcher)
@@ -50,7 +59,7 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if size, err := req.Size(); err != nil {
 		// We don't care to capture stats about requests with no size
 	} else {
-		app.SizeCounter.CountSize(size)
+		app.sizeCounter.CountSize(size)
 	}
 
 	var resizedData []byte
