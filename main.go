@@ -29,11 +29,12 @@ func main() {
 
 	// Set up the fetcher
 	flag.Parse()
-	proxyUrlPrefix := flag.Arg(0)
-	if proxyUrlPrefix == "" {
+	prefix := flag.Arg(0)
+	if prefix == "" {
 		panic("Must pass the proxy URL prefix to the command")
 	}
-	proxyFetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: proxyUrlPrefix}
+	fetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: prefix}
+	//fetcher := &slimgfast.FilesystemFetcher{PathPrefix: prefix}
 
 	// Instantiate the transformers
 	resizeTransformer := &slimgfast.TransformerResize{}
@@ -42,7 +43,7 @@ func main() {
 	// Create the app
 	app := slimgfast.NewApp(
 		sizeCounter,
-		proxyFetcher,
+		fetcher,
 		transformers,
 		NUM_WORKERS,
 		THUMB_CACHE_MEGABYTES,
