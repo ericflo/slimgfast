@@ -3,7 +3,6 @@ package slimgfast
 import (
 	"fmt"
 	"github.com/golang/groupcache"
-	"log"
 	"net/http"
 )
 
@@ -46,7 +45,6 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if size, err := req.Size(); err != nil {
-		log.Println("error getting size", err.Error())
 		// We don't care to capture stats about requests with no size
 	} else {
 		app.SizeCounter.CountSize(size)
