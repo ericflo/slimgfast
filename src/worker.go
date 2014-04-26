@@ -79,6 +79,7 @@ func resizeImg(req *ImageRequest, data []byte) ([]byte, error) {
 		log.Println("Error decoding image", err)
 		return nil, err
 	}
+	// TODO: Allow a dynamic list of transformations, not just resize
 	var buf bytes.Buffer
 	resized := resize.Resize(
 		uint(req.Width),
