@@ -14,7 +14,6 @@ type ImageRequest struct {
 	Fit    string
 }
 
-// URL: /NAMESPACE/BUCKET/FILENAME.jpg?w=100&h=100&fit=abc
 func ImageRequestFromURLString(rawUrl string) (*ImageRequest, error) {
 	req := ImageRequest{Url: rawUrl}
 	parsedUrl, err := url.Parse(rawUrl)
