@@ -4,7 +4,7 @@ Slimgfast is a library that allows you to create a scalable, efficient, dynamic
 image origin server.
 
 As an example, if you want an image to be resized to 640x480, you could hit the
-url at http://localhost/my-image.jpg?w=640&h=480 and slimgfast will dynamically
+url at http://127.0.0.1/my-image.jpg?w=640&h=480 and slimgfast will dynamically
 resize your image to the correct dimensions, serve it, and cache it for later.
 
 Slimgfast comes with an executable which supports a baseline default, but most
