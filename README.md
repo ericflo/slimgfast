@@ -71,7 +71,6 @@ fetcher as an example:
             return err
         }
         f.path = path.Clean(f.PathPrefix + parsedUrl.Path)
-        log.Println(f.path)
         return nil
     }
 
