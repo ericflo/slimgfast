@@ -10,6 +10,8 @@ resize your image to the correct dimensions, serve it, and cache it for later.
 Slimgfast comes with an executable which supports a baseline default, but most
 advanced users will want to use it as a library for maximum configurability.
 
+GoDoc: http://godoc.org/github.com/ericflo/slimgfast/src
+
 ## Getting Started
 
 The easiest way to get a copy of slimfast is to use "go get":
