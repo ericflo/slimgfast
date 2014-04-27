@@ -12,6 +12,10 @@ advanced users will want to use it as a library for maximum configurability.
 
 GoDoc: http://godoc.org/github.com/ericflo/slimgfast/src
 
+### Pronunciation
+
+It's pronounced like "slimmage fast" :)
+
 ## Getting Started
 
 The easiest way to get a copy of slimfast is to use "go get":
