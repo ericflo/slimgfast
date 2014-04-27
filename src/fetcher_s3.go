@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// S3Fetcher fetches images from an S3 bucket.
 type S3Fetcher struct {
 	Auth     aws.Auth
 	Region   aws.Region
@@ -16,6 +17,7 @@ type S3Fetcher struct {
 	filename string
 }
 
+// ParseURL looks at the request URL to determine the AWS bucket and filename.
 func (f *S3Fetcher) ParseURL(rawUrl string) error {
 	parsedUrl, err := url.ParseRequestURI(rawUrl)
 	if err != nil {
@@ -30,6 +32,8 @@ func (f *S3Fetcher) ParseURL(rawUrl string) error {
 	return nil
 }
 
+// Fetch grabs the image data from the bucket and filename determined by
+// ParseURL.
 func (f *S3Fetcher) Fetch(req *ImageRequest, dest groupcache.Sink) error {
 	conn := s3.New(f.Auth, f.Region)
 	bucket := conn.Bucket(f.bucket)

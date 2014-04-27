@@ -9,6 +9,7 @@ import (
 	"log"
 )
 
+// Job is a single image resize job that can be sent over a channel to a worker.
 type Job struct {
 	ImageSource  ImageSource
 	ImageRequest ImageRequest
@@ -16,12 +17,15 @@ type Job struct {
 	Error        chan error
 }
 
+// WorkerGroup is a pool of workers, a channel, and a list of Transformers
+// that this pool supports.
 type WorkerGroup struct {
 	Transformers []Transformer
 	NumWorkers   int
 	jobs         chan Job
 }
 
+// Start spawns workers for the worker pool and starts them up.
 func (wg *WorkerGroup) Start() {
 	wg.jobs = make(chan Job, wg.NumWorkers)
 	for i := 0; i < wg.NumWorkers; i++ {
@@ -29,10 +33,13 @@ func (wg *WorkerGroup) Start() {
 	}
 }
 
+// Close tells the workers to quit.
 func (wg *WorkerGroup) Close() {
 	close(wg.jobs)
 }
 
+// Resize enqueues one request to be run on a worker, and waits for it to
+// respond.
 func (wg *WorkerGroup) Resize(imageSource *ImageSource, imageRequest *ImageRequest) ([]byte, error) {
 	job := Job{
 		ImageSource:  *imageSource,
@@ -72,6 +79,9 @@ func work(wg *WorkerGroup) {
 	}
 }
 
+// resizeImg does the actual work of decoding the source image, running all the
+// transformations on it, and encoding it out as a jpeg, before returning the
+// final resized image's byte slice.
 func resizeImg(req *ImageRequest, transformers []Transformer, data []byte) ([]byte, error) {
 	// Middle variable is format name that was used
 	img, _, err := image.Decode(bytes.NewReader(data))

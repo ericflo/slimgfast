@@ -8,11 +8,14 @@ import (
 	"net/url"
 )
 
+// ProxyFetcher fetches images from an HTTP server.
 type ProxyFetcher struct {
 	ProxyUrlPrefix string
 	url            string
 }
 
+// ParseURL looks at the proxy URL prefix, appends the path of the request URL,
+// and arrives at a URL to the image we want to fetch.
 func (f *ProxyFetcher) ParseURL(rawUrl string) error {
 	parsedUrl, err := url.ParseRequestURI(rawUrl)
 	if err != nil {
@@ -23,6 +26,8 @@ func (f *ProxyFetcher) ParseURL(rawUrl string) error {
 	return nil
 }
 
+// Fetch makes an HTTP GET request to fetch the image data from the URL
+// determined by ParseURL
 func (f *ProxyFetcher) Fetch(req *ImageRequest, dest groupcache.Sink) error {
 	resp, err := http.Get(f.url)
 	if err != nil {

@@ -7,14 +7,19 @@ import (
 	"time"
 )
 
+// RESIZED_IMAGE_SOURCE_NAME is the default groupcache source name for the
+// resized
 const RESIZED_IMAGE_SOURCE_NAME string = "slimgfast_resized_image_source"
 
+// App ties together the fetcher, the transformers, handles the lifecycle of an
+// image request, and does the actual HTTP serving.
 type App struct {
 	sizeCounter *SizeCounter
 	cache       *groupcache.Group
 	workerGroup *WorkerGroup
 }
 
+// NewApp returns an App that is initialized and ready to be started.
 func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string, numWorkers int, cacheMegabytes int64) *App {
 	workerGroup := &WorkerGroup{
 		NumWorkers:   numWorkers,
@@ -25,8 +30,6 @@ func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string,
 	if err != nil {
 		panic(err.Error())
 	}
-	// Should we un-hardcode this? Does anyone care?
-	sizeCounter.Start(1 * time.Second)
 
 	app := &App{
 		sizeCounter: sizeCounter,
@@ -49,6 +52,8 @@ func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string,
 	return app
 }
 
+// ServeHTTP is responsible for actually kicking off the image transformations
+// and serving the image back to the user who requested it.
 func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	req, err := ImageRequestFromURLString(r.URL.String())
 	if err != nil {
@@ -80,14 +85,21 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write(resizedData)
 }
 
+// Start starts the application worker group and size counter goroutines.
 func (app *App) Start() {
 	app.workerGroup.Start()
+	// Should we un-hardcode this? Does anyone care?
+	app.sizeCounter.Start(1 * time.Second)
 }
 
+// Close signals to the worker group and size counter goroutines to exit.
 func (app *App) Close() {
 	app.workerGroup.Close()
+	app.sizeCounter.Close()
 }
 
+// handleError handles any errors that happen in the HTTP request/response
+// cycle.
 func handleError(status int, content string, w http.ResponseWriter, r *http.Request) {
 	// TODO: Generate an error image in the correct dimensions
 	w.WriteHeader(status)

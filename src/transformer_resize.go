@@ -5,8 +5,11 @@ import (
 	"image"
 )
 
+// TransformerResize is the primary Transformer that will resize images to the
+// proper size.
 type TransformerResize struct{}
 
+// Transform resizes the image as requested.
 func (t *TransformerResize) Transform(req *ImageRequest, image image.Image) (image.Image, error) {
 	resized := resize.Resize(
 		uint(req.Width),

@@ -11,23 +11,28 @@ import (
 	"time"
 )
 
+// Size is a Width and a Height
 type Size struct {
 	Width  uint
 	Height uint
 }
 
+// SizeFile is a struct that is used to serialize the aggregated Size counts
+// to a JSON file.
 type SizeFile struct {
 	Counts map[string]uint
 }
 
+// SizeCounter keeps track of how many times a certain size was requested, and
+// persists this information to disk on a periodic basis.
 type SizeCounter struct {
 	filename string
 	counts   map[string]uint
 	done     chan struct{}
 }
 
-/* Size */
-
+// SizeFromKey takes a string of the form WIDTHxHEIGHT and parses it into a
+// Size struct.
 func SizeFromKey(key string) (Size, error) {
 	var s Size
 	splitKey := strings.Split(key, "x")
@@ -50,12 +55,14 @@ func SizeFromKey(key string) (Size, error) {
 	return s, nil
 }
 
+// Key takes the current Size object's Width and Height and generates a string
+// of the form WIDTHxHEIGHT
 func (size Size) Key() string {
 	return fmt.Sprintf("%dx%d", size.Width, size.Height)
 }
 
-/* SizeCounter */
-
+// NewSizeCounter initializes a *SizeCounter struct, loads in, and parses the
+// persisted sizes.
 func NewSizeCounter(filename string) (*SizeCounter, error) {
 	counts, err := getCountsFromFilename(filename)
 	if err != nil {
@@ -68,6 +75,8 @@ func NewSizeCounter(filename string) (*SizeCounter, error) {
 	}, nil
 }
 
+// getCountsFromFilename loads in and parses the persisted sizes stored at the
+// specified filename.
 func getCountsFromFilename(filename string) (map[string]uint, error) {
 	sizes := make(map[string]uint)
 
@@ -94,6 +103,7 @@ func getCountsFromFilename(filename string) (map[string]uint, error) {
 	return sizeFile.Counts, nil
 }
 
+// saveFile serializes and persists the aggregated size stats to the filesystem.
 func saveFile(counter *SizeCounter) error {
 	bytes, err := json.Marshal(SizeFile{Counts: counter.counts})
 	if err != nil {
@@ -106,6 +116,8 @@ func saveFile(counter *SizeCounter) error {
 	return nil
 }
 
+// Start starts the counter persisting its aggregated size stats to disk
+// periodically.
 func (counter *SizeCounter) Start(every time.Duration) {
 	go func() {
 		ticks := time.Tick(every)
@@ -122,6 +134,7 @@ func (counter *SizeCounter) Start(every time.Duration) {
 	return
 }
 
+// CountSize notes the size of one request.
 func (counter *SizeCounter) CountSize(size *Size) {
 	key := size.Key()
 	if val, ok := counter.counts[key]; ok {
@@ -132,6 +145,7 @@ func (counter *SizeCounter) CountSize(size *Size) {
 	return
 }
 
+// GetAllSizes gets a list of all the sizes that we've seen.
 func (counter *SizeCounter) GetAllSizes() ([]Size, error) {
 	sizes := make([]Size, 0)
 	for key := range counter.counts {
@@ -144,8 +158,10 @@ func (counter *SizeCounter) GetAllSizes() ([]Size, error) {
 	return sizes, nil
 }
 
-// TODO: Sort first or something, this is not correct right now, it'll pick random values
+// GetTopSizesByCount gets a list of all the sizes who have been requested at
+// least `count` times.
 func (counter *SizeCounter) GetTopSizesByCount(count uint) ([]Size, error) {
+	// TODO: Sort first or something, this is not correct right now, it'll pick random values
 	sizes := make([]Size, 0)
 	var i uint = 0
 	for key := range counter.counts {
@@ -164,6 +180,7 @@ func (counter *SizeCounter) GetTopSizesByCount(count uint) ([]Size, error) {
 
 // TODO: GetTopSizesByPercentage?
 
+// Close stops the SizeCounter from doing any more persistence.
 func (counter *SizeCounter) Close() {
 	close(counter.done)
 	return
