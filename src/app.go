@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-// RESIZED_IMAGE_SOURCE_NAME is the default groupcache source name for the
-// resized
 const RESIZED_IMAGE_SOURCE_NAME string = "slimgfast_resized_image_source"
 
 // App ties together the fetcher, the transformers, handles the lifecycle of an
