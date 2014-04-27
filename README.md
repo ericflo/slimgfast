@@ -20,10 +20,12 @@ The easiest way to get a copy of slimfast is to use "go get":
 
 In your code you can now import the library:
 
-    import github.com/ericflo/slimgfast/src
+```go
+import github.com/ericflo/slimgfast/src
 
-    // For example:
-    fetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: "http://i.imgur.com"}
+// For example:
+fetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: "http://i.imgur.com"}
+```
 
 To see what the default executable can do, navigate to the newly-downloaded
 slimgfast directory and run:
@@ -59,61 +61,69 @@ In fact, this is all that
 Creating a Fetcher is straightforward, you only have to implement the Fetcher
 inteface, which means implementing the following:
 
-    Fetch(req *ImageRequest, dest groupcache.Sink) error
-    ParseURL(rawUrl string) error
+```go
+Fetch(req *ImageRequest, dest groupcache.Sink) error
+ParseURL(rawUrl string) error
+```
 
 Since it's really not all that much code, here's the body of the filesystem
 fetcher as an example:
 
-    type FilesystemFetcher struct {
-        PathPrefix string
-        path       string
-    }
+```go
+type FilesystemFetcher struct {
+    PathPrefix string
+    path       string
+}
 
-    func (f *FilesystemFetcher) ParseURL(rawUrl string) error {
-        parsedUrl, err := url.ParseRequestURI(rawUrl)
-        if err != nil {
-            return err
-        }
-        f.path = path.Clean(f.PathPrefix + parsedUrl.Path)
-        return nil
+func (f *FilesystemFetcher) ParseURL(rawUrl string) error {
+    parsedUrl, err := url.ParseRequestURI(rawUrl)
+    if err != nil {
+        return err
     }
+    f.path = path.Clean(f.PathPrefix + parsedUrl.Path)
+    return nil
+}
 
-    func (f *FilesystemFetcher) Fetch(req *ImageRequest, dest groupcache.Sink) error {
-        data, err := ioutil.ReadFile(f.path)
-        if err != nil {
-            return err
-        }
-        dest.SetBytes(data)
-        return nil
+func (f *FilesystemFetcher) Fetch(req *ImageRequest, dest groupcache.Sink) error {
+    data, err := ioutil.ReadFile(f.path)
+    if err != nil {
+        return err
     }
+    dest.SetBytes(data)
+    return nil
+}
+```
 
 ## Creating your own Transformer
 
 Creating a Transformer is similarly straightforward to creating a Fetcher,
 you have to implement the Transformer interface, which has only one method:
 
-    Transform(req *ImageRequest, image image.Image) (image.Image, error)
+```go
+Transform(req *ImageRequest, image image.Image) (image.Image, error)
+```
 
 So, it takes an image, and the request, and then returns the transformed image
 (or an error.)  Here's the body of the resize transformer as an example:
 
-    import (
-        "github.com/nfnt/resize"
-        "image"
+```go
+import (
+    "github.com/nfnt/resize"
+    "image"
+)
+
+type TransformerResize struct{}
+
+func (t *TransformerResize) Transform(req *ImageRequest, image image.Image) (image.Image, error) {
+    resized := resize.Resize(
+        uint(req.Width),
+        uint(req.Height),
+        image,
+        resize.Lanczos3,
     )
-
-    type TransformerResize struct{}
-
-    func (t *TransformerResize) Transform(req *ImageRequest, image image.Image) (image.Image, error) {
-        resized := resize.Resize(
-            uint(req.Width),
-            uint(req.Height),
-            image,
-            resize.Lanczos3,
-        )
-        return resized, nil
-    }
+    return resized, nil
+}
+```
 
 You could easily write a transformer that uses ImageMagick or epeg, if you want
 either more power or more performance.  Or you could write a filter to change
