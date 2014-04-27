@@ -10,7 +10,7 @@ resize your image to the correct dimensions, serve it, and cache it for later.
 Slimgfast comes with an executable which supports a baseline default, but most
 advanced users will want to use it as a library for maximum configurability.
 
-GoDoc: http://godoc.org/github.com/ericflo/slimgfast/src
+GoDoc: http://godoc.org/github.com/ericflo/slimgfast
 
 ### Pronunciation
 
@@ -20,21 +20,20 @@ It's pronounced like "slimmage fast" :)
 
 The easiest way to get a copy of slimfast is to use "go get":
 
-    go get github.com/ericflo/slimgfast
+    go get github.com/ericflo/slimgfast/cmd
 
 In your code you can now import the library:
 
 ```go
-import github.com/ericflo/slimgfast/src
+import "github.com/ericflo/slimgfast"
 
 // For example:
 fetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: "http://i.imgur.com"}
 ```
 
-To see what the default executable can do, navigate to the newly-downloaded
-slimgfast directory and run:
+To see what the default executable can do, try running:
 
-    go run main.go http://i.imgur.com
+    slimgfast http://i.imgur.com
 
 Now to load an image we can do:
 
@@ -59,7 +58,7 @@ The steps for setting up a slimfast instance are fairly straightforward:
 * Start the app and the http server
 
 In fact, this is all that
-[main.go](https://github.com/ericflo/slimgfast/blob/master/main.go) is doing.
+[main.go](https://github.com/ericflo/slimgfast/cmd/blob/master/main.go) is doing.
 
 ## Creating your own Fetcher
 

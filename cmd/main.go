@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/ericflo/slimgfast/src"
+	"github.com/ericflo/slimgfast"
 	"github.com/golang/groupcache"
 	"net/http"
 )
