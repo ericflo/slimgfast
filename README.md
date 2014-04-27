@@ -45,12 +45,13 @@ http://i.imgur.com/EgLrnVL.jpg.  With arguments it will resize it:
 
 The steps for setting up a slimfast instance are fairly straightforward:
 
-* Create a fetcher that will know how to read images from the upstream source
-* Create a list of transformers, or potential operations that can be applied to
-  the image (e.g. resize)
-* Instantiate an app struct, which collects all the fetchers and transformers
-  and handles the actual HTTP requests
-* Spin up the groupcache library so it knows who its peers are
+* Create a **fetcher** that will know how to read images from the upstream
+  source
+* Create a list of **transformers**, or potential operations that can be
+  applied to the image (e.g. resize)
+* Instantiate an **app struct**, which collects all the fetchers and
+  transformers and handles the actual HTTP requests
+* Spin up the **groupcache** library so it knows who its peers are
 * Start the app and the http server
 
 In fact, this is all that
