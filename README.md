@@ -51,6 +51,9 @@ The steps for setting up a slimfast instance are fairly straightforward:
 * Spin up the groupcache library so it knows who its peers are
 * Start the app and the http server
 
+In fact, this is all that
+[main.go](https://github.com/ericflo/slimgfast/blob/master/main.go) is doing.
+
 ## Creating your own Fetcher
 
 Creating a Fetcher is straightforward, you only have to implement the Fetcher
