@@ -1,3 +1,7 @@
+// Package slimfast is a library that allows you to create a service which will
+// resize, serve, and cache images.
+//
+// For a full guide, visit https://www.github.com/ericflo/slimgfast
 package slimgfast
 
 import (
