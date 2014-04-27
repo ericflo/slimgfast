@@ -119,6 +119,11 @@ interesting image transformation.  Since you have access to the request,
 you can parse the querystring with whatever semantics makes sense for your
 needs.
 
+## I want something with commercial support
+
+You should check out http://imgix.com/, which is a well-run startup that offers
+a similar but more advanced commercial image service.
+
 ## Status
 
 Status: Very, very alpha.  It started as some code I'd written for work, but
