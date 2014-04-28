@@ -66,7 +66,7 @@ Creating a Fetcher is straightforward, you only have to implement the Fetcher
 inteface, which means implementing the following:
 
 ```go
-Fetch(req *ImageRequest, dest groupcache.Sink) error
+Fetch(re, dest groupcache.Sink) error
 ```
 
 Since it's really not all that much code, here's the body of the filesystem
@@ -78,23 +78,9 @@ type FilesystemFetcher struct {
     PathPrefix string
 }
 
-// parseURL looks at the base directory, appends the path of the request URL,
-// and arrives at a path to the image on the filesystem.
-func parseFSUrl(f *FilesystemFetcher, rawUrl string) (string, error) {
-    parsedUrl, err := url.ParseRequestURI(rawUrl)
-    if err != nil {
-        return "", err
-    }
-    filePath := path.Clean(f.PathPrefix + parsedUrl.Path)
-    return filePath, nil
-}
-
 // Fetch opens and reads in the image data from the file requested by the user.
-func (f *FilesystemFetcher) Fetch(req *slimgfast.ImageRequest, dest groupcache.Sink) error {
-    filePath, err := parseFSUrl(f, req.Url)
-    if err != nil {
-        return err
-    }
+func (f *FilesystemFetcher) Fetch(urlPath string, dest groupcache.Sink) error {
+    filePath := path.Clean(f.PathPrefix + urlPath)
     data, err := ioutil.ReadFile(filePath)
     if err != nil {
         return err
