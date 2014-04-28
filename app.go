@@ -16,13 +16,23 @@ const RESIZED_IMAGE_SOURCE_NAME string = "slimgfast_resized_image_source"
 // App ties together the fetcher, the transformers, handles the lifecycle of an
 // image request, and does the actual HTTP serving.
 type App struct {
+	MaxWidth    int
+	MaxHeight   int
 	sizeCounter *SizeCounter
 	cache       *groupcache.Group
 	workerGroup *WorkerGroup
 }
 
 // NewApp returns an App that is initialized and ready to be started.
-func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string, numWorkers int, cacheMegabytes int64) (*App, error) {
+func NewApp(
+	fetcher Fetcher,
+	transformers []Transformer,
+	counterFilename string,
+	numWorkers int,
+	cacheMegabytes int64,
+	maxWidth int,
+	maxHeight int,
+) (*App, error) {
 	workerGroup := &WorkerGroup{
 		NumWorkers:   numWorkers,
 		Transformers: transformers,
@@ -34,6 +44,8 @@ func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string,
 	}
 
 	app := &App{
+		MaxWidth:    maxWidth,
+		MaxHeight:   maxHeight,
 		sizeCounter: sizeCounter,
 		workerGroup: workerGroup,
 	}
@@ -67,6 +79,15 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// We don't care to capture stats about requests with no size
 	} else {
 		app.sizeCounter.CountSize(size)
+	}
+
+	if req.Width != 0 && req.Width > app.MaxWidth {
+		handleBadDimensions(w, r)
+		return
+	}
+	if req.Height != 0 && req.Height > app.MaxHeight {
+		handleBadDimensions(w, r)
+		return
 	}
 
 	var resizedData []byte
@@ -103,7 +124,15 @@ func (app *App) Close() {
 // handleError handles any errors that happen in the HTTP request/response
 // cycle.
 func handleError(status int, content string, w http.ResponseWriter, r *http.Request) {
-	// TODO: Generate an error image in the correct dimensions
+	// TODO: Generate an error image in the correct dimensions?
 	w.WriteHeader(status)
 	fmt.Fprint(w, content)
+}
+
+// handleBadDimensions handles any errors that happen because the user requests
+// dimensions that are too large or invalid.
+func handleBadDimensions(w http.ResponseWriter, r *http.Request) {
+	// TODO: Generate an error image in the correct dimensions?
+	w.WriteHeader(http.StatusBadRequest)
+	fmt.Fprint(w, "Bad image dimensions requested.")
 }

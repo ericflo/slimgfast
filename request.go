@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 // ImageRequest captures information about which file the user wants to have
@@ -25,11 +26,16 @@ func ImageRequestFromURLString(rawUrl string) (*ImageRequest, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Fit = parsedUrl.Query().Get("fit")
 	// Purposely ignore the strcon errors here, if they're empty strings we'll
 	// notice that later and serve the image at its original size.
-	req.Width, _ = strconv.Atoi(parsedUrl.Query().Get("w"))
-	req.Height, _ = strconv.Atoi(parsedUrl.Query().Get("h"))
-	req.Fit = parsedUrl.Query().Get("fit")
+	w := parsedUrl.Query().Get("w")
+	h := parsedUrl.Query().Get("h")
+	if strings.Contains(w, "-") || strings.Contains(h, "-") {
+		return nil, errors.New("Cannot request a negative dimension.")
+	}
+	req.Width, _ = strconv.Atoi(w)
+	req.Height, _ = strconv.Atoi(h)
 	return &req, nil
 }
 

@@ -5,15 +5,8 @@ import (
 	"net/url"
 )
 
-const DEFAULT_IMAGE_SOURCE_NAME string = "slimgfast_image_source"
-const DEFAULT_CACHE_SIZE_MB int64 = 128
-
-// Fetcher is the interface that is used to fetch images from some source,
-// which could be the filesystem, a remote URL, or S3 -- but it could be from
-// anywhere.
-type Fetcher interface {
-	Fetch(urlPath string, dest groupcache.Sink) error
-}
+const DEFAULT_IMAGE_SOURCE_NAME = "slimgfast_image_source"
+const DEFAULT_CACHE_SIZE_MB = int64(128)
 
 // ImageSource is an abstraction over a fetcher which caches intelligently, and
 // serves as the primary internal interface to fetchers.

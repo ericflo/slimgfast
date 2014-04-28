@@ -32,8 +32,18 @@ var OUTPUT_CACHE_MB = int64(*flag.Int(
 	512,
 	"The amount of cache to reserve for resized images",
 ))
+var MAX_WIDTH = *flag.Int(
+	"max_width",
+	2048,
+	"The max width of the resized image",
+)
+var MAX_HEIGHT = *flag.Int(
+	"max_height",
+	2048,
+	"The max height of the resized image",
+)
 
-func main() {
+func parseFlags() slimgfast.Fetcher {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "\n")
 		fmt.Fprintf(os.Stderr, "Usage of slimgfastd: slimgfastd [OPTIONS] COMMAND PREFIX\n")
@@ -72,6 +82,11 @@ func main() {
 		}
 		flag.Usage()
 	}
+	return fetcher
+}
+
+func main() {
+	fetcher := parseFlags()
 
 	// Instantiate the transformers
 	resizeTransformer := &slimgfast.TransformerResize{}
@@ -84,6 +99,8 @@ func main() {
 		COUNTER_FILENAME,
 		NUM_WORKERS,
 		OUTPUT_CACHE_MB,
+		MAX_WIDTH,
+		MAX_HEIGHT,
 	)
 	if err != nil {
 		log.Fatal(err)
