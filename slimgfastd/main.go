@@ -7,16 +7,19 @@ import (
 	"github.com/golang/groupcache"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
 )
 
-var COUNTER_FILENAME string = slimgfast.GetEnvString(
+var COUNTER_FILENAME = getEnvString(
 	"SLIMGFAST_COUNTER_FILENAME", "/tmp/sizes.json")
-var GROUPCACHE_HOSTS string = slimgfast.GetEnvString(
+var GROUPCACHE_HOSTS = getEnvString(
 	"SLIMGFAST_GROUPCACHE_HOSTS", "http://localhost:4401")
-var PORT string = slimgfast.GetEnvString("SLIMGFAST_PORT", "4400")
-var NUM_WORKERS int = slimgfast.GetEnvInt("SLIMGFAST_NUM_WORKERS", 4)
-var THUMB_CACHE_MEGABYTES int64 = int64(slimgfast.GetEnvInt(
-	"SLIMGFAST_THUMB_CACHE_MEGABYTES", 512))
+var PORT = getEnvString("SLIMGFAST_PORT", "4400")
+var NUM_WORKERS = getEnvInt("SLIMGFAST_NUM_WORKERS", 4)
+var THUMB_CACHE_MEGABYTES = int64(
+	getEnvInt("SLIMGFAST_THUMB_CACHE_MEGABYTES", 512))
 
 func main() {
 	// Set up the fetcher
@@ -56,4 +59,40 @@ func main() {
 	if err = http.ListenAndServe(":"+PORT, app); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// UTILITIES
+
+// environ builds a full mapping of environment variables
+func environ() map[string]string {
+	_env := make(map[string]string)
+	for _, item := range os.Environ() {
+		splits := strings.SplitN(item, "=", 2)
+		_env[splits[0]] = splits[1]
+	}
+	return _env
+}
+
+// getEnvString tries first to get a string from the environment, but falls
+// back on a default provided value.
+func getEnvString(key, def string) string {
+	resp, ok := environ()[key]
+	if !ok {
+		return def
+	}
+	return resp
+}
+
+// getEnvInt tries first to get and parse an int from the environment, but
+// falls back on a default provided value.
+func getEnvInt(key string, def int) int {
+	rawVal, ok := environ()[key]
+	if !ok {
+		return def
+	}
+	resp, err := strconv.Atoi(rawVal)
+	if err != nil {
+		return def
+	}
+	return resp
 }
