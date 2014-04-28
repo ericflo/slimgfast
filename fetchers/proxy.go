@@ -1,6 +1,8 @@
 package fetchers
 
 import (
+	"errors"
+	"fmt"
 	"github.com/golang/groupcache"
 	"io/ioutil"
 	"net/http"
@@ -18,6 +20,13 @@ func (f *ProxyFetcher) Fetch(urlPath string, dest groupcache.Sink) error {
 	resp, err := http.Get(fullUrl)
 	if err != nil {
 		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		errStr := fmt.Sprintf(
+			"Got a bad status code back (expected 200, got %d)",
+			resp.StatusCode,
+		)
+		return errors.New(errStr)
 	}
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
