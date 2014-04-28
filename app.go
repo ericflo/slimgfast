@@ -23,6 +23,22 @@ type App struct {
 	workerGroup *WorkerGroup
 }
 
+func getCacheGetter(imageSource *ImageSource, workerGroup *WorkerGroup) groupcache.Getter {
+	return groupcache.GetterFunc(
+		func(ctx groupcache.Context, key string, dest groupcache.Sink) error {
+			req, err := ImageRequestFromCacheKey(key)
+			if err != nil {
+				return err
+			}
+			resizedData, err := workerGroup.Resize(imageSource, req)
+			if err != nil {
+				return err
+			}
+			dest.SetBytes(resizedData)
+			return nil
+		})
+}
+
 // NewApp returns an App that is initialized and ready to be started.
 func NewApp(
 	fetcher Fetcher,
@@ -50,19 +66,11 @@ func NewApp(
 		workerGroup: workerGroup,
 	}
 	imageSource := NewImageSource(fetcher)
-	app.cache = groupcache.NewGroup(RESIZED_IMAGE_SOURCE_NAME, cacheMegabytes<<20, groupcache.GetterFunc(
-		func(ctx groupcache.Context, key string, dest groupcache.Sink) error {
-			req, err := ImageRequestFromCacheKey(key)
-			if err != nil {
-				return err
-			}
-			resizedData, err := workerGroup.Resize(imageSource, req)
-			if err != nil {
-				return err
-			}
-			dest.SetBytes(resizedData)
-			return nil
-		}))
+	app.cache = groupcache.NewGroup(
+		RESIZED_IMAGE_SOURCE_NAME,
+		cacheMegabytes<<20,
+		getCacheGetter(imageSource, workerGroup),
+	)
 	return app, err
 }
 
