@@ -66,10 +66,10 @@ func main() {
 		} else {
 			fetcher = &fetchers.FilesystemFetcher{PathPrefix: prefix}
 		}
-	} else if command == "s3" {
-		log.Println("Sorry, S3 hasn't been implemented yet in the daemon.")
-		flag.Usage()
 	} else {
+		if command == "s3" {
+			log.Println("Sorry, S3 hasn't been implemented yet in the daemon.")
+		}
 		flag.Usage()
 	}
 
