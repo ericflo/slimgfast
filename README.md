@@ -66,7 +66,7 @@ Creating a Fetcher is straightforward, you only have to implement the Fetcher
 inteface, which means implementing the following:
 
 ```go
-Fetch(re, dest groupcache.Sink) error
+Fetch(urlPath string, dest groupcache.Sink) error
 ```
 
 Since it's really not all that much code, here's the body of the filesystem
