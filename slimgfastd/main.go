@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/ericflo/slimgfast"
+	"github.com/ericflo/slimgfast/fetchers"
 	"github.com/golang/groupcache"
 	"log"
 	"net/http"
@@ -24,8 +25,8 @@ func main() {
 	if prefix == "" {
 		panic("Must pass the prefix to the command")
 	}
-	fetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: prefix}
-	//fetcher := &slimgfast.FilesystemFetcher{PathPrefix: prefix}
+	fetcher := &fetchers.ProxyFetcher{ProxyUrlPrefix: prefix}
+	//fetcher := &fetchers.FilesystemFetcher{PathPrefix: prefix}
 
 	// Instantiate the transformers
 	resizeTransformer := &slimgfast.TransformerResize{}

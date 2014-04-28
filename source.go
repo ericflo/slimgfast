@@ -12,7 +12,6 @@ const DEFAULT_CACHE_SIZE_MB int64 = 128
 // anywhere.
 type Fetcher interface {
 	Fetch(req *ImageRequest, dest groupcache.Sink) error
-	ParseURL(rawUrl string) error
 }
 
 // ImageSource is an abstraction over a fetcher which caches intelligently, and
@@ -37,10 +36,6 @@ func NewImageSourceCustomCache(fetcher Fetcher, cacheName string, cacheMegabytes
 	cache := groupcache.NewGroup(cacheName, cacheMegabytes<<20, groupcache.GetterFunc(
 		func(ctx groupcache.Context, key string, dest groupcache.Sink) error {
 			req, err := ImageRequestFromCacheKey(key)
-			if err != nil {
-				return err
-			}
-			err = fetcher.ParseURL(req.Url)
 			if err != nil {
 				return err
 			}
