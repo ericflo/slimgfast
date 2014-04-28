@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,6 +30,7 @@ type SizeCounter struct {
 	filename string
 	counts   map[string]uint
 	done     chan struct{}
+	mut      *sync.RWMutex
 }
 
 // SizeFromKey takes a string of the form WIDTHxHEIGHT and parses it into a
@@ -68,10 +70,12 @@ func NewSizeCounter(filename string) (*SizeCounter, error) {
 	if err != nil {
 		return nil, err
 	}
+	mut := &sync.RWMutex{}
 	return &SizeCounter{
 		filename: filename,
 		done:     make(chan struct{}),
 		counts:   counts,
+		mut:      mut,
 	}, nil
 }
 
@@ -105,6 +109,8 @@ func getCountsFromFilename(filename string) (map[string]uint, error) {
 
 // saveFile serializes and persists the aggregated size stats to the filesystem.
 func saveFile(counter *SizeCounter) error {
+	counter.mut.RLock()
+	defer counter.mut.RUnlock()
 	bytes, err := json.Marshal(SizeFile{Counts: counter.counts})
 	if err != nil {
 		return err
@@ -136,6 +142,8 @@ func (counter *SizeCounter) Start(every time.Duration) {
 
 // CountSize notes the size of one request.
 func (counter *SizeCounter) CountSize(size *Size) {
+	counter.mut.Lock()
+	defer counter.mut.Unlock()
 	key := size.Key()
 	if val, ok := counter.counts[key]; ok {
 		counter.counts[key] = val + 1
@@ -147,7 +155,9 @@ func (counter *SizeCounter) CountSize(size *Size) {
 
 // GetAllSizes gets a list of all the sizes that we've seen.
 func (counter *SizeCounter) GetAllSizes() ([]Size, error) {
-	sizes := make([]Size, 0)
+	counter.mut.RLock()
+	defer counter.mut.RUnlock()
+	sizes := []Size{}
 	for key := range counter.counts {
 		if size, err := SizeFromKey(key); err == nil {
 			sizes = append(sizes, size)
@@ -162,10 +172,12 @@ func (counter *SizeCounter) GetAllSizes() ([]Size, error) {
 // least `count` times.
 func (counter *SizeCounter) GetTopSizesByCount(count uint) ([]Size, error) {
 	// TODO: Sort first or something, this is not correct right now, it'll pick random values
+	counter.mut.RLock()
+	defer counter.mut.RUnlock()
 	sizes := make([]Size, 0)
-	var i uint = 0
+	i := 0
 	for key := range counter.counts {
-		if i == count {
+		if uint(i) == count {
 			return sizes, nil
 		}
 		if size, err := SizeFromKey(key); err == nil {
