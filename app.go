@@ -22,7 +22,7 @@ type App struct {
 }
 
 // NewApp returns an App that is initialized and ready to be started.
-func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string, numWorkers int, cacheMegabytes int64) *App {
+func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string, numWorkers int, cacheMegabytes int64) (*App, error) {
 	workerGroup := &WorkerGroup{
 		NumWorkers:   numWorkers,
 		Transformers: transformers,
@@ -30,7 +30,7 @@ func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string,
 	// Create a counter to track image size requests
 	sizeCounter, err := NewSizeCounter(counterFilename)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
 	app := &App{
@@ -51,7 +51,7 @@ func NewApp(fetcher Fetcher, transformers []Transformer, counterFilename string,
 			dest.SetBytes(resizedData)
 			return nil
 		}))
-	return app
+	return app, err
 }
 
 // ServeHTTP is responsible for actually kicking off the image transformations

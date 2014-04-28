@@ -20,7 +20,7 @@ It's pronounced like "slimmage fast" :)
 
 The easiest way to get a copy of slimfast is to use "go get":
 
-    go get github.com/ericflo/slimgfast/cmd
+    go get github.com/ericflo/slimgfast/slimgfastd
 
 In your code you can now import the library:
 
@@ -33,7 +33,7 @@ fetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: "http://i.imgur.com"}
 
 To see what the default executable can do, try running:
 
-    slimgfast http://i.imgur.com
+    slimgfastd http://i.imgur.com
 
 Now to load an image we can do:
 
@@ -58,7 +58,7 @@ The steps for setting up a slimfast instance are fairly straightforward:
 * Start the app and the http server
 
 In fact, this is all that
-[main.go](https://github.com/ericflo/slimgfast/cmd/blob/master/main.go) is doing.
+[main.go](https://github.com/ericflo/slimgfast/blob/master/slimgfastd/main.go) is doing.
 
 ## Creating your own Fetcher
 

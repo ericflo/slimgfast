@@ -24,14 +24,10 @@ RUN chown slimgfast:slimgfast -R .
 
 ENV GOPATH /home/slimgfast/go
 
-RUN go get github.com/ericflo/slimgfast
-
-WORKDIR /home/slimgfast/go/src/github.com/ericflo/slimgfast
-
-RUN go build
+RUN go get github.com/ericflo/slimgfast/slimgfastd
 
 USER slimgfast
 
-ENTRYPOINT ["/home/slimgfast/go/bin/slimgfast"]
+ENTRYPOINT ["/home/slimgfast/go/bin/slimgfastd"]
 
 EXPOSE 4400
