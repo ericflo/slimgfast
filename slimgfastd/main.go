@@ -2,34 +2,76 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/ericflo/slimgfast"
 	"github.com/ericflo/slimgfast/fetchers"
 	"github.com/golang/groupcache"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"strings"
 )
 
-var COUNTER_FILENAME = getEnvString(
-	"SLIMGFAST_COUNTER_FILENAME", "/tmp/sizes.json")
-var GROUPCACHE_HOSTS = getEnvString(
-	"SLIMGFAST_GROUPCACHE_HOSTS", "http://localhost:4401")
-var PORT = getEnvString("SLIMGFAST_PORT", "4400")
-var NUM_WORKERS = getEnvInt("SLIMGFAST_NUM_WORKERS", 4)
-var THUMB_CACHE_MEGABYTES = int64(
-	getEnvInt("SLIMGFAST_THUMB_CACHE_MEGABYTES", 512))
+var COUNTER_FILENAME = *flag.String(
+	"counter_filename",
+	"/tmp/slimfast_sizes.json",
+	"The file where we'll save statistical information about which sizes were requested",
+)
+var GROUPCACHE_HOSTS = *flag.String(
+	"groupcache_hosts",
+	"http://localhost:4401",
+	"The URL prefix that you would like to assign to groupcache",
+)
+var PORT = *flag.String("port", "4400", "The port to serve images on")
+var NUM_WORKERS = *flag.Int(
+	"num_workers",
+	4,
+	"The number of worker goroutines to spawn",
+)
+var OUTPUT_CACHE_MB = int64(*flag.Int(
+	"output_cache_mb",
+	512,
+	"The amount of cache to reserve for resized images",
+))
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "Usage of slimgfastd: slimgfastd [OPTIONS] COMMAND PREFIX\n")
+		fmt.Fprintf(os.Stderr, "Available commands: proxy, filesystem\n")
+		fmt.Fprintf(os.Stderr, "Note: PREFIX is the URL prefix for proxying, or the file path prefix for filesystem\n\n")
+		fmt.Fprintf(os.Stderr, "Example: slimgfastd -num_workers 8 proxy http://i.imgur.com\n")
+		fmt.Fprintf(os.Stderr, "Example: slimgfastd -output_cache_mb 128 filesystem /srv/project/static/images\n\n")
+		fmt.Fprintf(os.Stderr, "Defaults:\n")
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "\n\n")
+		os.Exit(1)
+	}
+
 	// Set up the fetcher
 	flag.Parse()
-	prefix := flag.Arg(0)
-	if prefix == "" {
-		panic("Must pass the prefix to the command")
+
+	command := flag.Arg(0)
+	if command == "" {
+		flag.Usage()
 	}
-	fetcher := &fetchers.ProxyFetcher{ProxyUrlPrefix: prefix}
-	//fetcher := &fetchers.FilesystemFetcher{PathPrefix: prefix}
+
+	var fetcher slimgfast.Fetcher
+	if command == "proxy" || command == "filesystem" {
+		prefix := flag.Arg(1)
+		if prefix == "" {
+			flag.Usage()
+		}
+		if command == "proxy" {
+			fetcher = &fetchers.ProxyFetcher{ProxyUrlPrefix: prefix}
+		} else {
+			fetcher = &fetchers.FilesystemFetcher{PathPrefix: prefix}
+		}
+	} else if command == "s3" {
+		log.Println("Sorry, S3 hasn't been implemented yet in the daemon.")
+		flag.Usage()
+	} else {
+		flag.Usage()
+	}
 
 	// Instantiate the transformers
 	resizeTransformer := &slimgfast.TransformerResize{}
@@ -41,7 +83,7 @@ func main() {
 		transformers,
 		COUNTER_FILENAME,
 		NUM_WORKERS,
-		THUMB_CACHE_MEGABYTES,
+		OUTPUT_CACHE_MB,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -59,40 +101,4 @@ func main() {
 	if err = http.ListenAndServe(":"+PORT, app); err != nil {
 		log.Fatal(err)
 	}
-}
-
-// UTILITIES
-
-// environ builds a full mapping of environment variables
-func environ() map[string]string {
-	_env := make(map[string]string)
-	for _, item := range os.Environ() {
-		splits := strings.SplitN(item, "=", 2)
-		_env[splits[0]] = splits[1]
-	}
-	return _env
-}
-
-// getEnvString tries first to get a string from the environment, but falls
-// back on a default provided value.
-func getEnvString(key, def string) string {
-	resp, ok := environ()[key]
-	if !ok {
-		return def
-	}
-	return resp
-}
-
-// getEnvInt tries first to get and parse an int from the environment, but
-// falls back on a default provided value.
-func getEnvInt(key string, def int) int {
-	rawVal, ok := environ()[key]
-	if !ok {
-		return def
-	}
-	resp, err := strconv.Atoi(rawVal)
-	if err != nil {
-		return def
-	}
-	return resp
 }

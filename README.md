@@ -33,7 +33,7 @@ fetcher := &slimgfast.ProxyFetcher{ProxyUrlPrefix: "http://i.imgur.com"}
 
 To see what the default executable can do, try running:
 
-    slimgfastd http://i.imgur.com
+    slimgfastd proxy http://i.imgur.com
 
 Now to load an image we can do:
 
